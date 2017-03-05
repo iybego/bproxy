@@ -1,0 +1,25 @@
+EXT=/home/iybego/Documents/toolkits/openwrt/openwrt/staging_dir/toolchain-mips_34kc_gcc-4.8-linaro_uClibc-0.9.33.2/bin/
+
+CC=$(EXT)/mips-openwrt-linux-gcc
+CFLAGS=-c -Wall -Wextra -Wpedantic -O3 -std=gnu99
+
+LD=$(EXT)/mips-openwrt-linux-gcc
+LDFLAGS=-s -flto
+
+.PHONY: test
+
+all: test
+
+ip_recvorigdstaddr: obj/test.o
+	$(LD) $(LDFLAGS) obj/test.o -o ip_recvorigdstaddr
+
+test: ip_recvorigdstaddr
+	./ip_recvorigdstaddr
+
+obj/test.o: src/test.c
+	mkdir -p obj
+	$(CC) $(CFLAGS) src/test.c -o obj/test.o
+
+clean:
+	rm -rf obj
+	rm -f ip_recvorigdstaddr

@@ -1,0 +1,55 @@
+EXT=/home/iybego/Documents/toolkits/openwrt/openwrt/staging_dir/toolchain-mips_34kc_gcc-4.8-linaro_uClibc-0.9.33.2/bin/
+
+CC=$(EXT)/mips-openwrt-linux-gcc
+CFLAGS=-c -Wall -Wextra -Wpedantic -O3 -std=gnu99
+
+LD=$(EXT)/mips-openwrt-linux-gcc
+LDFLAGS=-s -flto
+
+.PHONY: bproxy
+
+all: bproxy
+
+bproxy: obj/bproxy.o obj/configuration.o obj/log.o obj/hashmap.o obj/socket.o obj/poll.o obj/rtlink.o obj/source.o obj/timer.o src/list.h src/jenkins.h
+	$(LD) $(LDFLAGS) obj/bproxy.o obj/configuration.o obj/log.o obj/hashmap.o obj/socket.o obj/poll.o obj/rtlink.o obj/source.o obj/timer.o -o bproxy
+
+obj/log.o: src/log.c src/log.h
+	mkdir -p obj
+	$(CC) $(CFLAGS) src/log.c -o obj/log.o
+
+obj/bproxy.o: src/bproxy.c src/bproxy.h
+	mkdir -p obj
+	$(CC) $(CFLAGS) src/bproxy.c -o obj/bproxy.o
+
+obj/configuration.o: src/configuration.c src/configuration.h
+	mkdir -p obj
+	$(CC) $(CFLAGS) src/configuration.c -o obj/configuration.o
+
+obj/hashmap.o: src/hashmap.c src/hashmap.h
+	mkdir -p obj
+	$(CC) $(CFLAGS) src/hashmap.c -o obj/hashmap.o
+
+obj/socket.o: src/socket.c src/socket.h
+	mkdir -p obj
+	$(CC) $(CFLAGS) src/socket.c -o obj/socket.o
+
+obj/poll.o: src/poll.c src/poll.h
+	mkdir -p obj
+	$(CC) $(CFLAGS) src/poll.c -o obj/poll.o
+
+obj/rtlink.o: src/rtlink.c src/rtlink.h
+	mkdir -p obj
+	$(CC) $(CFLAGS) src/rtlink.c -o obj/rtlink.o
+
+obj/source.o: src/source.c src/source.h
+	mkdir -p obj
+	$(CC) $(CFLAGS) src/source.c -o obj/source.o
+
+obj/timer.o: src/timer.c src/timer.h
+	mkdir -p obj
+	$(CC) $(CFLAGS) src/timer.c -o obj/timer.o
+
+clean:
+	rm -rf obj
+	rm -f bproxy
+

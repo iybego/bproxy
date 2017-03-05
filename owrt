@@ -1,0 +1,71 @@
+#!/bin/bash
+
+HOSTNAME=root@ap-l
+
+BINARY="bproxy"
+OPTIONS="--verbose --configuration /etc/test.cfg"
+
+MAKE="clean all"
+
+STAGING_DIR=~/Documents/toolkits/openwrt/openwrt/staging_dir/toolchain-mips_34kc_gcc-4.8-linaro_uClibc-0.9.33.2/
+export STAGING_DIR
+
+cleanup () {
+cat << EOF | ssh $HOSTNAME "cat > /tmp/cleanup.sh && chmod +x /tmp/cleanup.sh && /tmp/cleanup.sh \"$1\""
+#!/bin/sh
+
+PID=\`pgrep "/tmp/\$1*"\`
+
+if [ -z "\$PID" ]; then
+    exit 0
+fi
+
+kill -9 \$PID && echo "killed pid [\$PID]"
+
+rm -f "\$1" && echo "removed \$1"
+
+exit 0
+EOF
+}
+
+if [ -n "$1" ] ; then
+    OPTIONS="$1"
+fi
+
+echo -e "building..."
+
+make -f Makefile.owrt $MAKE
+CODE=$?
+
+[ $CODE -gt 0 ] && {
+    echo "failed with $CODE!"
+    exit 1
+}
+
+[ ! -f ./$BINARY ] && {
+    echo "failed (file not found)!"
+    exit 1
+}
+
+echo -e "done, cleanup..."
+
+cleanup "$BINARY"
+
+echo -e "done, transfer ($BINARY)..."
+
+cat ./$BINARY | ssh $HOSTNAME "cat > /tmp/$BINARY; chmod +x /tmp/$BINARY"
+
+echo -e "done, starting..."
+echo -e "=====   SESSION    ======\n"
+
+ssh $HOSTNAME "uname -a && echo -e \"\" && /bin/ash -c \"/tmp/$BINARY $OPTIONS\""
+
+echo -e "\n===== DISCONNECTED ======"
+echo -e "cleanup..."
+
+cleanup $BINARY
+
+echo -e "done\n"
+
+exit 0
+

@@ -1,0 +1,11 @@
+[Unit]
+Description=bproxy [%i] - Broadcast Proxy
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/bproxy --configuration /etc/bproxy/%i.cfg --log-no-date --define "unit=%i"
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
